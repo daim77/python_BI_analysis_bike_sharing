@@ -1,3 +1,4 @@
+import os
 import pandas as pd
 
 import sqlalchemy as db
@@ -28,6 +29,7 @@ def load_data_from_engeto():
 
     db_connection.close()
 
+    write_data_to_csv(bikes_df, weather_df)
     return bikes_df, weather_df
 
 
@@ -53,8 +55,13 @@ def data_description(bike_df, weather_df):
 
 
 def main():
-    bikes_df, weather_df = load_data_from_engeto()
-    write_data_to_csv(bikes_df, weather_df)
+    if not os.path.isfile('tables/bikes_df.csv') or \
+            not os.path.isfile('tables/weather_df.csv'):
+        bikes_df, weather_df = load_data_from_engeto()
+    else:
+        bikes_df = pd.read_csv('tables/bikes_df.csv')
+        weather_df = pd.read_csv('tables/weather_df.csv')
+
     data_description(bikes_df, weather_df)
 
 
