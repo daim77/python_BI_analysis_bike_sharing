@@ -12,10 +12,18 @@ def load_data_from_engeto():
     db_connection = engeto_conn.connect()
 
     bikes_df = pd.read_sql_query(
-        "select * from edinburgh_bikes limit 100",
-        engeto_conn, parse_dates=True)
-    weather_df = pd.read_sql(
-        'select * from edinburgh_weather limit 100',
+        "SELECT "
+        "started_at, ended_at, "
+        "start_station_id, start_station_latitude, start_station_longitude, "
+        "end_station_id, end_station_latitude, end_station_longitude "
+        "FROM edinburgh_bikes;",
+        engeto_conn, parse_dates=True
+    )
+
+    weather_df = pd.read_sql_query(
+        "SELECT "
+        "date, time, temp, feels, wind, gust, rain, humidity, cloud, vis "
+        "FROM edinburgh_weather;",
         engeto_conn, parse_dates=True)
 
     db_connection.close()
@@ -23,8 +31,10 @@ def load_data_from_engeto():
     return bikes_df, weather_df
 
 
-def write_data_to_csv():
-    pass
+def write_data_to_csv(bikes_df, weather_df):
+    bikes_df.to_csv('tables/bikes.csv', sep='\t')
+    weather_df.to_csv('tables/weather.csv', sep='\t')
+    return
 
 
 def data_description(bike_df, weather_df):
@@ -44,6 +54,7 @@ def data_description(bike_df, weather_df):
 
 def main():
     bikes_df, weather_df = load_data_from_engeto()
+    write_data_to_csv(bikes_df, weather_df)
     data_description(bikes_df, weather_df)
 
 
