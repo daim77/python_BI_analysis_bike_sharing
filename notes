@@ -21,7 +21,7 @@ The demand is always in a market, a place where a set of buyers and sellers meet
 
 ==============
 bike dates and weather dates must be same - select data
-own hire duration calculation
+own hire duration calculation - I have durations 1s longer
 ========================================
 BIKES
 'started_at', 'ended_at', 'start_station_id', 'start_station_latitude', 'start_station_longitude', 'end_station_id',
@@ -35,5 +35,7 @@ WETHER
 340986              number of hire acts
 776 days 14:59:20   measured period
 40 hire acts        less than 111 times per measured period (less than ones per week)
+
+station ID 250 - total the most accumulated bycicles
 
 
