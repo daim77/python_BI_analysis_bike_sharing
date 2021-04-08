@@ -99,7 +99,8 @@ def compute_data(bikes_df, weather_df):
 
 def bikes_movement(bikes_df):
     date_transfer = bikes_df.started_at.dt.date.min()
-    period_df = bikes_df.started_at.dt.date.max() - bikes_df.started_at.dt.date.min()
+    period_df = bikes_df.started_at.dt.date.max() \
+                - bikes_df.started_at.dt.date.min()
     period = period_df.days
     for i in range(1, period + 1):
 
