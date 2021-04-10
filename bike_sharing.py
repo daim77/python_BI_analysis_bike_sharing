@@ -95,12 +95,12 @@ def data_prep(weather_df):
 def compute_data(bikes_df, df_station_id):
     bikes_df['duration'] = bikes_df['ended_at'] - bikes_df['started_at']
     bikes_df['duration'] = bikes_df['duration'].dt.seconds
-    bikes_df['delta_elev'] = bikes_df['end_elev'] - bikes_df['start_elev']
     elev_dict = pd.Series(df_station_id['elev']
                           .values,
-                          index=df_station_id['station_id']).to_dict()
+                          index=df_station_id.index).to_dict()
     bikes_df['start_elev'] = bikes_df['start_station_id'].map(elev_dict)
     bikes_df['end_elev'] = bikes_df['end_station_id'].map(elev_dict)
+    bikes_df['delta_elev'] = bikes_df['end_elev'] - bikes_df['start_elev']
     return
 
 
@@ -154,6 +154,25 @@ def bikes_movement(bikes_df):
     return
 
 
+def data_visual(bikes_df, weather_df):
+    # wind speed and gust dependency
+    df = weather_df.loc[:, ['wind_speed_km_h', 'gust_km_h']]
+    df.plot.scatter('wind_speed_km_h', 'gust_km_h', figsize=(12, 6),
+                    marker='x', color='blue')
+    # temp and feels temp dependency
+    df1 = weather_df.loc[:, ['temp_c', 'feels_c']]
+    df1.plot.scatter('temp_c', 'feels_c', figsize=(12, 6), marker='x',
+                     color='red')
+    # start_station and end_station dependency
+    df2 = bikes_df.loc[:, ['start_station_id', 'end_station_id']]
+    df2.plot.scatter('start_station_id', 'end_station_id', figsize=(12, 6),
+                     marker='x', color='k')
+    # jurney delta elevation histogram
+    df5 = bikes_df.loc[:, ['delta_elev']]
+    df5.plot.hist('delta_elev', figsize=(12, 6), color='green', bins=15)
+    return
+
+
 def unique_stations_id(bikes_df):
     df3 = pd.DataFrame(bikes_df.loc[:,
                        ['start_station_id', 'start_station_latitude',
@@ -204,8 +223,10 @@ def main():
         .apply(lambda x: get_elevation_osm(x['lat'], x['long']), axis=1)
 
     compute_data(bikes_df, df_station_id)
+    # bikes_movement(bikes_df)
+
+    data_visual(bikes_df, weather_df)
     data_stat(bikes_df, weather_df)
-    bikes_movement(bikes_df)
 
     write_data_to_csv(bikes_df, weather_df, df_station_id)
 
