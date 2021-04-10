@@ -122,26 +122,51 @@ def bikes_movement(bikes_df):
             print('diff_df_max: ', diff_df.idxmax)
 
         date_transfer += datetime.timedelta(days=i)
-
     return
 
 
-def get_elevation_osm(lat_station, long_statiion):
-    lat, long = 55.95473, -3.19265
-    overpass_url = \
+def unique_stations_id(bikes_df):
+    df3 = pd.DataFrame(bikes_df.loc[:,
+                       ['start_station_id', 'start_station_latitude',
+                        'start_station_longitude']]) \
+        .drop_duplicates('start_station_id', keep='first') \
+        .rename(columns={'start_station_id': 'station_id',
+                         'start_station_latitude': 'lat',
+                         'start_station_longitude': 'long'})
+
+    df4 = bikes_df.loc[:,
+          ['end_station_id', 'end_station_latitude', 'end_station_longitude']] \
+        .drop_duplicates('end_station_id', keep='first') \
+        .rename(columns={'end_station_id': 'station_id',
+                         'end_station_latitude': 'lat',
+                         'end_station_longitude': 'long'})
+    df_stations_id = pd.merge(df4, df3, left_on='station_id',
+                              right_on='station_id', how='left')
+    df_stations_id = df_stations_id.drop(['lat_y', 'long_y'],
+                                         axis=1).sort_index(ascending=False)
+    df_stations_id = df_stations_id.rename(
+        columns={'lat_x': 'lat', 'long_x': 'long'})
+    return df_stations_id
+
+
+def get_elevation_osm(lat, long):
+    osm_api = \
         f"https://api.open-elevation.com/api/v1/lookup?locations={lat},{long}"
-    response = requests.get(overpass_url)
-    print(response.content)
+    response = requests.get(osm_api)
     elevation = response.json()
-    print(elevation['results'][0]['elevation'])
+    return elevation['results'][0]['elevation']
+
 
 def main():
     bikes_df, weather_df = load_data_from_engeto()
     # bikes_df, weather_df = load_from_lamikoko()
 
-    data_stat(bikes_df, weather_df)
+    # data_stat(bikes_df, weather_df)
 
-    compute_data(bikes_df, weather_df)
+    # compute_data(bikes_df, weather_df)
+    df_station_id = unique_stations_id(bikes_df)
+    # df_station_id['elev'] = df_station_id\
+    #     .apply(get_elevation_osm(df_station_id.lat, df_station_id.long))
 
 
 if __name__ == '__main__':
