@@ -35,17 +35,19 @@ def load_data_from_engeto():
                     inplace=True)
     weather_df.drop(weather_df.loc[weather_df['date'] == '2020-10-31'].index,
                     inplace=True)
-    write_data_to_csv(bikes_df, weather_df)
-
-    # user = "lamikoko.cz.2"
-    # password = "Zzdenka1"
-    # conn_string = f"mysql+pymysql://{user}:{password}@lamikoko.cz/lamikokocz2"
-    #
-    # lamikoko_conn = db.create_engine(conn_string, echo=True)
-    # bikes_df.to_sql('bikes', lamikoko_conn)
-    # weather_df.to_sql('weather', lamikoko_conn)
-
     return bikes_df, weather_df
+
+
+def data_to_lamikoko(bikes_df, weather_df):
+    user = "lamikoko.cz.2"
+    password = "Zzdenka1"
+    conn_string = f"mysql+pymysql://{user}:{password}@lamikoko.cz/lamikokocz2"
+
+    lamikoko_conn = db.create_engine(conn_string, echo=True)
+    bikes_df.to_sql('bikes', lamikoko_conn)
+    weather_df.to_sql('weather', lamikoko_conn)
+
+    return
 
 
 def load_from_lamikoko():
@@ -60,9 +62,45 @@ def load_from_lamikoko():
     return bikes_df, weather_df
 
 
-def write_data_to_csv(bikes_df, weather_df):
-    bikes_df.to_csv('tables/bikes.csv', sep='\t')
-    weather_df.to_csv('tables/weather.csv', sep='\t')
+def data_prep(weather_df):
+    weather_df['wind_speed_km_h'] = weather_df['wind'].str.split(' ').str[0]
+    weather_df['wind_direction'] = weather_df['wind'].str.split(' ').str[3]
+    weather_df['gust_km_h'] = weather_df['gust'].str.split(' ').str[0]
+    weather_df['temp_c'] = weather_df['temp'].str.split(' ').str[0]
+    weather_df['feels_c'] = weather_df['feels'].str.split(' ').str[0]
+    weather_df['rain_mm'] = weather_df['rain'].str.split(' ').str[0]
+    weather_df['humidity_%'] = weather_df['humidity'].str.rstrip('%')
+    weather_df['cloudiness_%'] = weather_df['cloud'].str.rstrip('%')
+
+    weather_df = weather_df.astype({'wind_speed_km_h': int,
+                                    "gust_km_h": int,
+                                    'temp_c': int,
+                                    'feels_c': int,
+                                    'rain_mm': float,
+                                    'humidity_%': int,
+                                    'cloudiness_%': int, })
+    weather_df['date'] = pd.to_datetime(weather_df['date'])
+    weather_df.drop(
+        ['wind', 'gust', 'temp', 'feels', 'rain', 'humidity', 'cloud'], axis=1,
+        inplace=True)
+
+    weather_df['wind_direction'] = weather_df['wind_direction'].map(
+        {'S': 180, 'SSW': 202.5, 'SW': 225, 'SE': 135,
+         'WSW': 247.5, 'W': 270, 'NE': 45, 'ENE': 67.5,
+         'E': 90, 'NNE': 22.5, 'NNW': 337.5, 'NW': 315,
+         'WNW': 292.5, 'SSE': 157.5, 'ESE': 112.5, 'N': 0})
+    return weather_df
+
+
+def compute_data(bikes_df, df_station_id):
+    bikes_df['duration'] = bikes_df['ended_at'] - bikes_df['started_at']
+    bikes_df['duration'] = bikes_df['duration'].dt.seconds
+    bikes_df['delta_elev'] = bikes_df['end_elev'] - bikes_df['start_elev']
+    elev_dict = pd.Series(df_station_id['elev']
+                          .values,
+                          index=df_station_id['station_id']).to_dict()
+    bikes_df['start_elev'] = bikes_df['start_station_id'].map(elev_dict)
+    bikes_df['end_elev'] = bikes_df['end_station_id'].map(elev_dict)
     return
 
 
@@ -74,47 +112,38 @@ def data_stat(bikes_df, weather_df):
     print('=' * 50)
     print(bikes_df.columns)
     print(bikes_df.head(10))
+    print(bikes_df.info)
     print('=' * 50)
     print(weather_df.columns)
     print(weather_df.head(10))
+    print(weather_df.info)
 
     stations_starts_df = bikes_df['start_station_id'].value_counts()
     stations_ends_df = bikes_df['end_station_id'].value_counts()
 
-    print('Nejvice se akumuluje: ',
+    print('accumulation at: ',
           (stations_ends_df - stations_starts_df).idxmax())
 
-    print('Number of stations',
-          stations_starts_df.index.__len__())
-    print('Station used less then 50 times',
+    print('Number of stations: ',
+          stations_ends_df.index.__len__())
+    print('Station used less then 50 times: ',
           stations_starts_df.loc[stations_starts_df < 50].index.__len__())
-
-    print(bikes_df.started_at.min())
-    print(bikes_df.started_at.max())
-
-
-def compute_data(bikes_df, weather_df):
-    bikes_df['duration'] = bikes_df['ended_at'] - bikes_df['started_at']
-    bikes_df['duration'] = bikes_df['duration'].dt.seconds
-    return
 
 
 def bikes_movement(bikes_df):
     date_transfer = bikes_df.started_at.dt.date.min()
-    period_df = bikes_df.started_at.dt.date.max() \
-                - bikes_df.started_at.dt.date.min()
+    period_df = \
+        bikes_df.started_at.dt.date.max() - bikes_df.started_at.dt.date.min()
     period = period_df.days
     for i in range(1, period + 1):
 
         mov_start_df = \
-            bikes_df.loc[bikes_df['started_at']
-                             .dt.date <= date_transfer, ['start_station_id']]\
-                .value_counts()
+            bikes_df.loc[bikes_df['started_at'].dt.date <= date_transfer,
+                         ['start_station_id']].value_counts()
 
         mov_end_df = \
-            bikes_df.loc[bikes_df['started_at'].
-                             dt.date <= date_transfer, ['end_station_id']]\
-                .value_counts()
+            bikes_df.loc[bikes_df['started_at'].dt.date <= date_transfer,
+                         ['end_station_id']].value_counts()
 
         diff_df = mov_end_df - mov_start_df
 
@@ -134,8 +163,8 @@ def unique_stations_id(bikes_df):
                          'start_station_latitude': 'lat',
                          'start_station_longitude': 'long'})
 
-    df4 = bikes_df.loc[:,
-          ['end_station_id', 'end_station_latitude', 'end_station_longitude']] \
+    df4 = bikes_df.loc[:, ['end_station_id', 'end_station_latitude',
+                           'end_station_longitude']]\
         .drop_duplicates('end_station_id', keep='first') \
         .rename(columns={'end_station_id': 'station_id',
                          'end_station_latitude': 'lat',
@@ -157,16 +186,28 @@ def get_elevation_osm(lat, long):
     return elevation['results'][0]['elevation']
 
 
+def write_data_to_csv(bikes_df, weather_df, df_station_id):
+    bikes_df.to_csv('tables/bikes.csv', sep='\t')
+    weather_df.to_csv('tables/weather.csv', sep='\t')
+    df_station_id.to_csv('tables/df_station_id.csv', sep='\t')
+    return
+
+
 def main():
     bikes_df, weather_df = load_data_from_engeto()
+    # data_to_lamikoko(bikes_df, weather_df)
     # bikes_df, weather_df = load_from_lamikoko()
+    weather_df = data_prep(weather_df)
 
-    # data_stat(bikes_df, weather_df)
-
-    # compute_data(bikes_df, weather_df)
     df_station_id = unique_stations_id(bikes_df)
-    # df_station_id['elev'] = df_station_id\
-    #     .apply(get_elevation_osm(df_station_id.lat, df_station_id.long))
+    df_station_id['elev'] = df_station_id.iloc[:] \
+        .apply(lambda x: get_elevation_osm(x['lat'], x['long']), axis=1)
+
+    compute_data(bikes_df, df_station_id)
+    data_stat(bikes_df, weather_df)
+    bikes_movement(bikes_df)
+
+    write_data_to_csv(bikes_df, weather_df, df_station_id)
 
 
 if __name__ == '__main__':
