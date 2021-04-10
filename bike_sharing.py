@@ -1,4 +1,6 @@
 import datetime
+import requests
+
 import pandas as pd
 
 import sqlalchemy as db
@@ -35,13 +37,13 @@ def load_data_from_engeto():
                     inplace=True)
     write_data_to_csv(bikes_df, weather_df)
 
-    user = "lamikoko.cz.2"
-    password = "Zzdenka1"
-    conn_string = f"mysql+pymysql://{user}:{password}@lamikoko.cz/lamikokocz2"
-
-    lamikoko_conn = db.create_engine(conn_string, echo=True)
-    bikes_df.to_sql('bikes', lamikoko_conn)
-    weather_df.to_sql('weather', lamikoko_conn)
+    # user = "lamikoko.cz.2"
+    # password = "Zzdenka1"
+    # conn_string = f"mysql+pymysql://{user}:{password}@lamikoko.cz/lamikokocz2"
+    #
+    # lamikoko_conn = db.create_engine(conn_string, echo=True)
+    # bikes_df.to_sql('bikes', lamikoko_conn)
+    # weather_df.to_sql('weather', lamikoko_conn)
 
     return bikes_df, weather_df
 
@@ -124,9 +126,18 @@ def bikes_movement(bikes_df):
     return
 
 
+def get_elevation_osm(lat_station, long_statiion):
+    lat, long = 55.95473, -3.19265
+    overpass_url = \
+        f"https://api.open-elevation.com/api/v1/lookup?locations={lat},{long}"
+    response = requests.get(overpass_url)
+    print(response.content)
+    elevation = response.json()
+    print(elevation['results'][0]['elevation'])
+
 def main():
-    # bikes_df, weather_df = load_data_from_engeto()
-    bikes_df, weather_df = load_from_lamikoko()
+    bikes_df, weather_df = load_data_from_engeto()
+    # bikes_df, weather_df = load_from_lamikoko()
 
     data_stat(bikes_df, weather_df)
 
