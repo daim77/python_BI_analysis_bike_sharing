@@ -2,8 +2,8 @@ import datetime
 import requests
 
 import pandas as pd
-
 import sqlalchemy as db
+import matplotlib.pyplot as plt
 
 
 def load_data_from_engeto():
@@ -40,13 +40,12 @@ def load_data_from_engeto():
 
 def data_to_lamikoko(bikes_df, weather_df):
     user = "lamikoko.cz.2"
-    password = "Zzdenka1"
+    password = "heslo a povolit access v administraci"
     conn_string = f"mysql+pymysql://{user}:{password}@lamikoko.cz/lamikokocz2"
 
     lamikoko_conn = db.create_engine(conn_string, echo=True)
     bikes_df.to_sql('bikes', lamikoko_conn)
     weather_df.to_sql('weather', lamikoko_conn)
-
     return
 
 
@@ -92,16 +91,50 @@ def data_prep(weather_df):
     return weather_df
 
 
-def compute_data(bikes_df, df_station_id):
+def unique_stations_id(bikes_df):
+    df3 = pd.DataFrame(bikes_df.loc[:,
+                       ['start_station_id', 'start_station_latitude',
+                        'start_station_longitude']]) \
+        .drop_duplicates('start_station_id', keep='first') \
+        .rename(columns={'start_station_id': 'station_id',
+                         'start_station_latitude': 'lat',
+                         'start_station_longitude': 'long'})
+
+    df4 = bikes_df.loc[:, ['end_station_id', 'end_station_latitude',
+                           'end_station_longitude']]\
+        .drop_duplicates('end_station_id', keep='first') \
+        .rename(columns={'end_station_id': 'station_id',
+                         'end_station_latitude': 'lat',
+                         'end_station_longitude': 'long'})
+    df_stations_id = pd.merge(df4, df3, left_on='station_id',
+                              right_on='station_id', how='left')
+    df_stations_id = df_stations_id.drop(['lat_y', 'long_y'],
+                                         axis=1).sort_index(ascending=False)
+    df_stations_id = df_stations_id.rename(
+        columns={'lat_x': 'lat', 'long_x': 'long'})
+    return df_stations_id
+
+
+def get_elevation_osm(lat, long):
+    osm_api = \
+        f"https://api.open-elevation.com/api/v1/lookup?locations={lat},{long}"
+    response = requests.get(osm_api)
+    elevation = response.json()
+    return elevation['results'][0]['elevation']
+
+
+def compute_data(bikes_df, df_stations_id):
     bikes_df['duration'] = bikes_df['ended_at'] - bikes_df['started_at']
     bikes_df['duration'] = bikes_df['duration'].dt.seconds
-    elev_dict = pd.Series(df_station_id['elev']
+    elev_dict = pd.Series(df_stations_id['elev']
                           .values,
-                          index=df_station_id.index).to_dict()
+                          index=df_stations_id.index).to_dict()
+    # v teto funkci nemapuje elevaci...
     bikes_df['start_elev'] = bikes_df['start_station_id'].map(elev_dict)
     bikes_df['end_elev'] = bikes_df['end_station_id'].map(elev_dict)
+    # uphill == END > START
     bikes_df['delta_elev'] = bikes_df['end_elev'] - bikes_df['start_elev']
-    return
+    return bikes_df
 
 
 def data_stat(bikes_df, weather_df):
@@ -169,40 +202,10 @@ def data_visual(bikes_df, weather_df):
                      marker='x', color='k')
     # jurney delta elevation histogram
     df5 = bikes_df.loc[:, ['delta_elev']]
-    df5.plot.hist('delta_elev', figsize=(12, 6), color='green', bins=15)
+    df5.plot.hist('delta_elev', figsize=(12, 6), color='green', bins=10)
+
+    plt.show()
     return
-
-
-def unique_stations_id(bikes_df):
-    df3 = pd.DataFrame(bikes_df.loc[:,
-                       ['start_station_id', 'start_station_latitude',
-                        'start_station_longitude']]) \
-        .drop_duplicates('start_station_id', keep='first') \
-        .rename(columns={'start_station_id': 'station_id',
-                         'start_station_latitude': 'lat',
-                         'start_station_longitude': 'long'})
-
-    df4 = bikes_df.loc[:, ['end_station_id', 'end_station_latitude',
-                           'end_station_longitude']]\
-        .drop_duplicates('end_station_id', keep='first') \
-        .rename(columns={'end_station_id': 'station_id',
-                         'end_station_latitude': 'lat',
-                         'end_station_longitude': 'long'})
-    df_stations_id = pd.merge(df4, df3, left_on='station_id',
-                              right_on='station_id', how='left')
-    df_stations_id = df_stations_id.drop(['lat_y', 'long_y'],
-                                         axis=1).sort_index(ascending=False)
-    df_stations_id = df_stations_id.rename(
-        columns={'lat_x': 'lat', 'long_x': 'long'})
-    return df_stations_id
-
-
-def get_elevation_osm(lat, long):
-    osm_api = \
-        f"https://api.open-elevation.com/api/v1/lookup?locations={lat},{long}"
-    response = requests.get(osm_api)
-    elevation = response.json()
-    return elevation['results'][0]['elevation']
 
 
 def write_data_to_csv(bikes_df, weather_df, df_station_id):
@@ -212,24 +215,39 @@ def write_data_to_csv(bikes_df, weather_df, df_station_id):
     return
 
 
-def main():
+def read_data_from_csv():
+    bikes_df = \
+        pd.read_csv('tables/bikes.csv', sep='\t').iloc[:, 2:]
+    weather_df = \
+        pd.read_csv('tables/weather.csv', sep='\t').iloc[:, 2:]
+    df_stations_id = \
+        pd.read_csv('tables/df_station_id.csv', sep='\t').iloc[:, 1:]
+
+    print(df_stations_id.head())
+    print(bikes_df.head())
+    print(weather_df.head())
+
+    return bikes_df, weather_df, df_stations_id
+
+
+if __name__ == '__main__':
+
     bikes_df, weather_df = load_data_from_engeto()
     # data_to_lamikoko(bikes_df, weather_df)
     # bikes_df, weather_df = load_from_lamikoko()
     weather_df = data_prep(weather_df)
 
-    df_station_id = unique_stations_id(bikes_df)
-    df_station_id['elev'] = df_station_id.iloc[:] \
+    df_stations_id = unique_stations_id(bikes_df)
+
+    df_stations_id['elev'] = df_stations_id.iloc[:] \
         .apply(lambda x: get_elevation_osm(x['lat'], x['long']), axis=1)
 
-    compute_data(bikes_df, df_station_id)
+    bikes_df = compute_data(bikes_df, df_stations_id)
     # bikes_movement(bikes_df)
 
     data_visual(bikes_df, weather_df)
     data_stat(bikes_df, weather_df)
 
-    write_data_to_csv(bikes_df, weather_df, df_station_id)
+    write_data_to_csv(bikes_df, weather_df, df_stations_id)
 
-
-if __name__ == '__main__':
-    main()
+    # bikes_df, weather_df, df_station_id = read_data_from_csv()
