@@ -1,5 +1,6 @@
 import datetime
 import requests
+import math
 
 import pandas as pd
 import sqlalchemy as db
@@ -123,6 +124,24 @@ def get_elevation_osm(lat, long):
     return elevation['results'][0]['elevation']
 
 
+def get_distance(lat1, long1, lat2, long2):
+    if (lat1 == lat2) and (long1 == long2):
+        return 0
+
+    RADIUS = 6371
+
+    a_lat = math.radians(lat1)
+    b_lat = math.radians(lat2)
+    delta_long = abs(math.radians(long2) - math.radians(long1))
+
+    delta = math.acos(
+        math.sin(a_lat) * math.sin(b_lat)
+        + math.cos(a_lat) * math.cos(b_lat)
+        * math.cos(delta_long)
+    )
+    return round(RADIUS * delta, 2)
+
+
 def compute_data(bikes_df, df_stations_id):
     bikes_df['duration'] = bikes_df['ended_at'] - bikes_df['started_at']
     bikes_df['duration'] = bikes_df['duration'].dt.seconds
@@ -241,6 +260,12 @@ if __name__ == '__main__':
 
     df_stations_id['elev'] = df_stations_id.iloc[:, :] \
         .apply(lambda x: get_elevation_osm(x['lat'], x['long']), axis=1)
+
+    bikes_df['dist_km'] = bikes_df.iloc[:, :] \
+        .apply(lambda x: get_distance(x['start_station_latitude'],
+                                      x['start_station_longitude'],
+                                      x['end_station_latitude'],
+                                      x['end_station_longitude']), axis=1)
 
     bikes_df = compute_data(bikes_df, df_stations_id)
     # bikes_movement(bikes_df)
