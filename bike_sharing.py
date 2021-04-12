@@ -239,7 +239,7 @@ if __name__ == '__main__':
 
     df_stations_id = unique_stations_id(bikes_df)
 
-    df_stations_id['elev'] = df_stations_id.iloc[:] \
+    df_stations_id['elev'] = df_stations_id.iloc[:, :] \
         .apply(lambda x: get_elevation_osm(x['lat'], x['long']), axis=1)
 
     bikes_df = compute_data(bikes_df, df_stations_id)
@@ -248,6 +248,6 @@ if __name__ == '__main__':
     data_visual(bikes_df, weather_df)
     data_stat(bikes_df, weather_df)
 
-    write_data_to_csv(bikes_df, weather_df, df_stations_id)
+    # write_data_to_csv(bikes_df, weather_df, df_stations_id)
 
     # bikes_df, weather_df, df_station_id = read_data_from_csv()

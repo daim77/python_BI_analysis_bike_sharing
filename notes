@@ -49,6 +49,9 @@ MIN delra ELEV: -104m
 distance, bearing - simple calculation EARTH == ideal globe
 compare journey bearing to wind direction
 
+3 values are extreme. End station lies in Liverpool and distances are 250km!!!
+Length of city is approx 15km
+
 histogram dist, duration, bearing
 
 ===== WEATHER ====
