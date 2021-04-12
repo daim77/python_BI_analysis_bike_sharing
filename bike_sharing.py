@@ -142,6 +142,34 @@ def get_distance(lat1, long1, lat2, long2):
     return round(RADIUS * delta, 2)
 
 
+def get_heading(lat1, long1, lat2, long2):
+    if (lat1 == lat2) and (long1 == long2):
+        return 999
+    # point1
+    lat1 = math.radians(lat1)
+    long1 = math.radians(long1)
+    # point2
+    lat2 = math.radians(lat2)
+    long2 = math.radians(long2)
+
+    delta_long = long2 - long1
+
+    bearing = math.atan(
+        math.cos(lat2) * math.sin(delta_long)
+        / (
+                math.cos(lat1) * math.sin(lat2)
+                - math.sin(lat1) * math.cos(lat2) * math.cos(delta_long)
+        )
+    )
+
+    bearing = math.degrees(bearing)
+
+    if bearing == 0 and math.copysign(-1, bearing) == -1:
+        return 180
+    else:
+        return int(divmod(bearing, 360)[1])
+
+
 def compute_data(bikes_df, df_stations_id):
     bikes_df['duration'] = bikes_df['ended_at'] - bikes_df['started_at']
     bikes_df['duration'] = bikes_df['duration'].dt.seconds
@@ -223,6 +251,15 @@ def data_visual(bikes_df, weather_df):
     df5 = bikes_df.loc[:, ['delta_elev']]
     df5.plot.hist('delta_elev', figsize=(12, 6), color='green', bins=10)
 
+    df6 = bikes_df.loc[:, ['dist_km']]
+    df6.plot.hist('dist_km', figsize=(12, 6), color='green', bins=16)
+
+    df7 = bikes_df.loc[:, ['heading_deg']]
+    df7.plot.hist('heading_deg', figsize=(12, 6), color='green', bins=5)
+
+    df8 = bikes_df.loc[:, ['duration_s']]
+    df8.plot.hist('duration_s', figsize=(12, 6), color='green', bins=20)
+
     plt.show()
     return
 
@@ -266,6 +303,12 @@ if __name__ == '__main__':
                                       x['start_station_longitude'],
                                       x['end_station_latitude'],
                                       x['end_station_longitude']), axis=1)
+
+    bikes_df['heading_deg'] = bikes_df.iloc[:, :] \
+        .apply(lambda x: get_heading(x['start_station_latitude'],
+                                     x['start_station_longitude'],
+                                     x['end_station_latitude'],
+                                     x['end_station_longitude']), axis=1)
 
     bikes_df = compute_data(bikes_df, df_stations_id)
     # bikes_movement(bikes_df)

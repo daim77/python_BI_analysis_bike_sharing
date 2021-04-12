@@ -51,6 +51,7 @@ compare journey bearing to wind direction
 
 3 values are extreme. End station lies in Liverpool and distances are 250km!!!
 Length of city is approx 15km
+50788 journeys => START/END same point
 
 histogram dist, duration, bearing
 
