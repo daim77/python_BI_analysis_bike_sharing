@@ -43,7 +43,7 @@ Data loaded from OpenStreetMap with its API
 delta ELEV calculated: coding: uphill if END > START
 delta ELEV histogram - majority of journeys are done fith delta elev <-35m, +23m>
 MAX delta ELEV: 102m
-MIN delra ELEV: -104m
+MIN delta ELEV: -104m
 
 ====count====
 distance, bearing - simple calculation EARTH == ideal globe
@@ -51,7 +51,7 @@ compare journey bearing to wind direction
 
 3 values are extreme. End station lies in Liverpool and distances are 250km!!!
 Length of city is approx 15km
-50788 journeys => START/END same point
+50788 journeys => START/END same point coding as 999 for heading value
 
 histogram dist, duration, bearing
 
