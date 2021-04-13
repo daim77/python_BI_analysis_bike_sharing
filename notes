@@ -63,9 +63,8 @@ coding: 0 - Monday, 6 - Sunday
 group by month:
 frequent useage from May till October
 3 times less during winter period
-
-group by week day:
-similar usage during week period
+during winter period approx 13k rides per day regardless weekday
+from May till October rides 3 times more frequent and Saturday 4 times
 
 ===== WEATHER ====
 DEPENDENCIES

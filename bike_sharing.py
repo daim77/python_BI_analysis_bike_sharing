@@ -284,6 +284,23 @@ def data_visual(bikes_df, weather_df):
     df = bikes_df['started_at'].dt.month
     df.plot.hist(df, figsize=(12, 6), color='orange', bins=12, legend='True',
                  title='Month rides')
+    # Day analysis
+    df = bikes_df.loc[:, ['day_of_week']]
+    df.plot.hist('day_of_week', figsize=(12, 6), color='red', bins=7)
+
+    cond1 = bikes_df['started_at'].dt.month >= 5
+    cond2 = bikes_df['started_at'].dt.month <= 10
+    selection = cond1 & cond2
+    df = bikes_df.loc[selection, ['day_of_week']]
+    df.plot.hist('day_of_week', figsize=(12, 6), color='red', bins=7,
+                 title='from MAY till OCTOBER distribution')
+
+    cond1 = bikes_df['started_at'].dt.month <= 4
+    cond2 = bikes_df['started_at'].dt.month >= 11
+    selection = cond1 | cond2
+    df = bikes_df.loc[selection, ['day_of_week']]
+    df.plot.hist('day_of_week', figsize=(12, 6), color='red', bins=7,
+                 title='winter period distribution')
     plt.show()
     return
 
