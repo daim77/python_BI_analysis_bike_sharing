@@ -56,6 +56,7 @@ histogram dist, duration, bearing
 majority journeys to 2500s / 41min
 majority journeys low distances
 majority journeys towards see => downhill
+no rides with heading <100, 250>
 
 ## column day_of_week added
 coding: 0 - Monday, 6 - Sunday

@@ -167,11 +167,16 @@ def get_heading(lat1, long1, lat2, long2):
     )
 
     bearing = math.degrees(bearing)
-
+    print('raw result: ', bearing)
     if bearing == 0 and math.copysign(-1, bearing) == -1:
-        return 180
+        bearing = 180
+    elif (lat1 > lat2) & (long1 > long2):
+        bearing += 180
+    elif (lat1 <= lat2) & (long1 > long2):
+        bearing += 360
     else:
-        return int(divmod(bearing, 360)[1])
+        bearing = int(divmod(bearing, 180)[1])
+    return bearing
 
 
 def compute_data(bikes_df, df_stations_id):
