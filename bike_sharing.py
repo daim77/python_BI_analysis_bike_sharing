@@ -273,9 +273,9 @@ def write_data_to_csv(bikes_df, weather_df, df_station_id):
 
 def read_data_from_csv():
     bikes_df = \
-        pd.read_csv('tables/bikes.csv', sep='\t').iloc[:, 2:]
+        pd.read_csv('tables/bikes.csv', sep='\t').iloc[:, 1:]
     weather_df = \
-        pd.read_csv('tables/weather.csv', sep='\t').iloc[:, 2:]
+        pd.read_csv('tables/weather.csv', sep='\t').iloc[:, 1:]
     df_stations_id = \
         pd.read_csv('tables/df_stations_id.csv', sep='\t').iloc[:, 1:]
 
