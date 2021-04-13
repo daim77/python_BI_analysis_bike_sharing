@@ -62,7 +62,7 @@ def load_from_lamikoko():
     return bikes_df, weather_df
 
 
-def data_prep(weather_df):
+def data_prep(bikes_df, weather_df):
     weather_df['wind_speed_km_h'] = weather_df['wind'].str.split(' ').str[0]
     weather_df['wind_direction'] = weather_df['wind'].str.split(' ').str[3]
     weather_df['gust_km_h'] = weather_df['gust'].str.split(' ').str[0]
@@ -89,7 +89,10 @@ def data_prep(weather_df):
          'WSW': 247.5, 'W': 270, 'NE': 45, 'ENE': 67.5,
          'E': 90, 'NNE': 22.5, 'NNW': 337.5, 'NW': 315,
          'WNW': 292.5, 'SSE': 157.5, 'ESE': 112.5, 'N': 0})
-    return weather_df
+
+    bikes_df['started_at'] = pd.to_datetime(bikes_df['started_at'])
+    bikes_df['ended_at'] = pd.to_datetime(bikes_df['ended_at'])
+    return bikes_df, weather_df
 
 
 def unique_stations_id(bikes_df):
@@ -181,6 +184,7 @@ def compute_data(bikes_df, df_stations_id):
     bikes_df['end_elev'] = bikes_df['end_station_id'].map(elev_dict)
     # uphill == END > START
     bikes_df['delta_elev'] = bikes_df['end_elev'] - bikes_df['start_elev']
+    bikes_df['day_of_week'] = bikes_df['started_at'].dt.dayofweek
     return bikes_df
 
 
@@ -291,7 +295,7 @@ if __name__ == '__main__':
     bikes_df, weather_df = load_data_from_engeto()
     # data_to_lamikoko(bikes_df, weather_df)
     # bikes_df, weather_df = load_from_lamikoko()
-    weather_df = data_prep(weather_df)
+    bikes_df, weather_df = data_prep(weather_df)
 
     df_stations_id = unique_stations_id(bikes_df)
 

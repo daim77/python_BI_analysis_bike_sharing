@@ -57,6 +57,12 @@ majority journeys to 2500s / 41min
 majority journeys low distances
 majority journeys towards see => downhill
 
+## column day_of_week added
+coding: 0 - Monday, 6 - Sunday
+
+next:
+histogram, group by month, group by week day
+
 ===== WEATHER ====
 DEPENDENCIES
 WIND and GUST => probably only wind is important
