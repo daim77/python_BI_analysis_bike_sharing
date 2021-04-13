@@ -79,7 +79,8 @@ def data_prep(bikes_df, weather_df):
                                     'rain_mm': float,
                                     'humidity_%': int,
                                     'cloudiness_%': int, })
-    weather_df['date'] = pd.to_datetime(weather_df['date'])
+    weather_df['date'] = pd.to_datetime(weather_df['date']).dt.date
+    weather_df['time'] = pd.to_datetime(weather_df['time']).dt.time
     weather_df.drop(
         ['wind', 'gust', 'temp', 'feels', 'rain', 'humidity', 'cloud'], axis=1,
         inplace=True)
@@ -244,25 +245,28 @@ def data_visual(bikes_df, weather_df):
     df.plot.scatter('wind_speed_km_h', 'gust_km_h', figsize=(12, 6),
                     marker='x', color='blue')
     # temp and feels temp dependency
-    df1 = weather_df.loc[:, ['temp_c', 'feels_c']]
-    df1.plot.scatter('temp_c', 'feels_c', figsize=(12, 6), marker='x',
+    df = weather_df.loc[:, ['temp_c', 'feels_c']]
+    df.plot.scatter('temp_c', 'feels_c', figsize=(12, 6), marker='x',
                      color='red')
     # start_station and end_station dependency
-    df2 = bikes_df.loc[:, ['start_station_id', 'end_station_id']]
-    df2.plot.scatter('start_station_id', 'end_station_id', figsize=(12, 6),
+    df = bikes_df.loc[:, ['start_station_id', 'end_station_id']]
+    df.plot.scatter('start_station_id', 'end_station_id', figsize=(12, 6),
                      marker='x', color='k')
     # jurney delta elevation histogram
-    df5 = bikes_df.loc[:, ['delta_elev']]
-    df5.plot.hist('delta_elev', figsize=(12, 6), color='green', bins=10)
+    df = bikes_df.loc[:, ['delta_elev']]
+    df.plot.hist('delta_elev', figsize=(12, 6), color='green', bins=10)
 
-    df6 = bikes_df.loc[:, ['dist_km']]
-    df6.plot.hist('dist_km', figsize=(12, 6), color='green', bins=16)
+    df = bikes_df.loc[:, ['dist_km']]
+    df.plot.hist('dist_km', figsize=(12, 6), color='green', bins=16)
 
-    df7 = bikes_df.loc[:, ['heading_deg']]
-    df7.plot.hist('heading_deg', figsize=(12, 6), color='green', bins=5)
+    df = bikes_df.loc[:, ['heading_deg']]
+    df.plot.hist('heading_deg', figsize=(12, 6), color='green', bins=5)
 
-    df8 = bikes_df.loc[:, ['duration_s']]
-    df8.plot.hist('duration_s', figsize=(12, 6), color='green', bins=20)
+    df = bikes_df.loc[:, ['duration_s']]
+    df.plot.hist('duration_s', figsize=(12, 6), color='green', bins=20)
+
+    df = bikes_df.loc[:, ['day_of_week']]
+    df.plot.hist('day_of_week', figsize=(12, 6), color='red', bins=7)
 
     plt.show()
     return
