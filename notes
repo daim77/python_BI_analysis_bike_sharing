@@ -60,8 +60,12 @@ majority journeys towards see => downhill
 ## column day_of_week added
 coding: 0 - Monday, 6 - Sunday
 
-next:
-histogram, group by month, group by week day
+group by month:
+frequent useage from May till October
+3 times less during winter period
+
+group by week day:
+similar usage during week period
 
 ===== WEATHER ====
 DEPENDENCIES

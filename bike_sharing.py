@@ -264,10 +264,26 @@ def data_visual(bikes_df, weather_df):
 
     df = bikes_df.loc[:, ['duration_s']]
     df.plot.hist('duration_s', figsize=(12, 6), color='green', bins=20)
-
+    # month histogram
     df = bikes_df.loc[:, ['day_of_week']]
     df.plot.hist('day_of_week', figsize=(12, 6), color='red', bins=7)
+    cond1 = bikes_df['started_at'].dt.month >= 5
+    cond2 = bikes_df['started_at'].dt.month <= 10
+    selection = cond1 & cond2
+    df = bikes_df.loc[selection, ['started_at']]['started_at'].dt.month
+    df.plot.hist(df, figsize=(12, 6), color='orange', bins=6,
+                 title='from MAY till OCTOBER', xticks=[5, 6, 7, 8, 9, 10])
 
+    cond1 = bikes_df['started_at'].dt.month <= 4
+    cond2 = bikes_df['started_at'].dt.month >= 11
+    selection = cond1 | cond2
+    df = bikes_df.loc[selection, ['started_at']]['started_at'].dt.month
+    df.plot.hist(df, figsize=(12, 6), color='orange', bins=12,
+                 title='WINTER RIDES')
+
+    df = bikes_df['started_at'].dt.month
+    df.plot.hist(df, figsize=(12, 6), color='orange', bins=12, legend='True',
+                 title='Month rides')
     plt.show()
     return
 
