@@ -8,8 +8,14 @@ import matplotlib.pyplot as plt
 
 
 def load_data_from_engeto():
-    user = "student"
-    password = "p7@vw7MCatmnKjy7"
+    file1 = open(
+        '/Users/martindanek/Documents/programovani/engeto_password.txt', "r")
+    user_data = eval(file1.read())
+    file1.close()
+
+    user = user_data[0][0]
+    password = user_data[0][1]
+
     conn_string = f"mysql+pymysql://{user}:{password}@data.engeto.com/data"
     engeto_conn = db.create_engine(conn_string, echo=True)
 
@@ -40,8 +46,13 @@ def load_data_from_engeto():
 
 
 def data_to_lamikoko(bikes_df, weather_df):
-    user = "lamikoko.cz.2"
-    password = "heslo a povolit access v administraci"
+    file1 = open(
+        '/Users/martindanek/Documents/programovani/lamikoko_password.txt', "r")
+    user_data = eval(file1.read())
+    file1.close()
+
+    user = user_data[0][0]
+    password = user_data[0][1]
     conn_string = f"mysql+pymysql://{user}:{password}@lamikoko.cz/lamikokocz2"
 
     lamikoko_conn = db.create_engine(conn_string, echo=True)
