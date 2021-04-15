@@ -192,7 +192,7 @@ def get_heading(lat1, long1, lat2, long2):
 
 def compute_data(bikes_df, df_stations_id):
     bikes_df['duration'] = bikes_df['ended_at'] - bikes_df['started_at']
-    bikes_df['duration'] = bikes_df['duration'].dt.seconds
+    bikes_df['duration'] = bikes_df['duration'].dt.total_seconds()
     elev_dict = pd.Series(df_stations_id['elev']
                           .values,
                           index=df_stations_id.index).to_dict()
