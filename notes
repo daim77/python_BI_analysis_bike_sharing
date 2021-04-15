@@ -27,7 +27,7 @@ BIKES
 'started_at', 'ended_at', 'start_station_id', 'start_station_latitude', 'start_station_longitude', 'end_station_id',
 'end_station_latitude', 'end_station_longitude'
 
-WETHER
+WEATHER
 'date', 'time', 'temp', 'feels', 'wind', 'gust', 'rain', 'humidity', 'cloud', 'vis'
 
 ===== BASIC STAT =====
@@ -56,7 +56,7 @@ histogram dist, duration, bearing
 majority journeys to 2500s / 41min
 majority journeys low distances
 majority journeys towards see => downhill
-no rides with heading <100, 250>
+less rides within heading <100, 250>
 
 ## column day_of_week added
 coding: 0 - Monday, 6 - Sunday
