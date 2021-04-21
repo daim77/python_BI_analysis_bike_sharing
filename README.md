@@ -40,8 +40,7 @@ _minimum_ information required:
 ## SOLUTION
 
 - load data
-- show data
-- missing data
+- data preparation
+- visualisation
 - descriptive statistics
-- tableau - quick problems definitions
-- solutions
+- conclusion
