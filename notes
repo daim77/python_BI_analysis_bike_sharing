@@ -36,12 +36,12 @@ WEATHER
 776 days 14:59:20   measured period
 40 hire acts        less than 111 times per measured period (less than ones per week)
 
-station ID 250 - total the most accumulated bycicles
+station ID 250 -  the most total accumulated bycicles
 
 =====ELEVATION=====
 Data loaded from OpenStreetMap with its API
 delta ELEV calculated: coding: uphill if END > START
-delta ELEV histogram - majority of journeys are done fith delta elev <-35m, +23m>
+delta ELEV histogram - majority of journeys are done fifth delta elev <-35m, +23m>
 MAX delta ELEV: 102m
 MIN delta ELEV: -104m
 
@@ -61,18 +61,17 @@ less rides within heading <100, 250>
 ## column day_of_week added
 coding: 0 - Monday, 6 - Sunday
 
-group by month:
-frequent useage from May till October
+demand grouped by month:
+frequent usage from May till October
 3 times less during winter period
 during winter period approx 13k rides per day regardless weekday
 from May till October rides 3 times more frequent and Saturday 4 times
 
 ===== WEATHER ====
-DEPENDENCIES
-WIND and GUST => probably only wind is important
-TEMP and FEELS => probably only temp is important
+WIND and GUST => selected only gust as feeling assessment
+TEMP and FEELS => selected only feels as feeling assessment
 
-compare journey bearing to wind direction
+compare journey bearing to wind direction = no correlation
 
 count most used stations then top10 and show their elevation
 
